@@ -1,0 +1,70 @@
+﻿<UserControl x:Class="Battle.ui.VarCoparition"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Battle.ui"
+             mc:Ignorable="d" 
+             d:DesignHeight="71.578" d:DesignWidth="378.663">
+	<Grid >
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Name="AName" SharedSizeGroup="AN"/>
+			<ColumnDefinition Name="Values" MinWidth="80"/>
+			<ColumnDefinition Name="BName" SharedSizeGroup="BN"/>
+		</Grid.ColumnDefinitions>
+
+		<Border Grid.Column="0" Grid.ColumnSpan="2"
+			  HorizontalAlignment="Left"
+			  VerticalAlignment="Center"
+			  Width="102"
+			  Height="27"
+			  Background="LightGreen"
+				CornerRadius="0,0,10,0">
+
+		</Border>
+
+		<Grid Grid.Column="1" Grid.ColumnSpan="2"
+			  HorizontalAlignment="Right"
+			  VerticalAlignment="Center"
+			  Width="110"
+			  Height="27"
+			  Background="MediumAquamarine">
+		</Grid>
+
+		<Label x:Name="aName" Grid.Column="0"
+			   Background="LightGreen"
+			   HorizontalAlignment="Right"
+			   VerticalAlignment="Center">AVariableName</Label>
+		<Label x:Name="bName" Grid.Column="2"
+			   Background="MediumAquamarine"
+			   HorizontalAlignment="Left"
+			   VerticalAlignment="Center"
+			   >BVariableName</Label>
+
+		<StackPanel x:Name="bg" Grid.Column="1"
+					VerticalAlignment="Center"
+					Margin="2,0,2,0">
+			<Border Grid.Column="0" Grid.ColumnSpan="2"
+				  HorizontalAlignment="Stretch"
+				  VerticalAlignment="Center"
+				  Height="30"
+				  Margin="0,0,0,0"
+					CornerRadius="10,5,5,0"
+				  Background="LightGreen">
+			</Border>
+			<Border Grid.Column="0" Grid.ColumnSpan="2"
+				  HorizontalAlignment="Stretch"
+				  VerticalAlignment="Center"
+				  Height="30"
+					CornerRadius="10,0,10,10"
+				  Background="MediumAquamarine">
+			</Border>
+		</StackPanel>
+		<StackPanel x:Name="values" Grid.Column="1"
+					VerticalAlignment="Center"
+					Margin="15,0,15,0">
+			<TextBox x:Name="aVal" HorizontalContentAlignment="Center" Margin="2">12346</TextBox>
+			<TextBox x:Name="bVal" HorizontalContentAlignment="Center" Margin="2">12467</TextBox>
+		</StackPanel>
+	</Grid>
+</UserControl>

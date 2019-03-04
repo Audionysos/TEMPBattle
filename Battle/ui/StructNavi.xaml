@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="Battle.ui.StructNavi"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Battle.ui"
+             mc:Ignorable="d" 
+             d:DesignHeight="31.429" d:DesignWidth="275.714">
+	<Grid>
+		<StackPanel
+			Orientation="Horizontal">
+			<StackPanel.Resources>
+				<Style TargetType="{x:Type Button}">
+					<Setter Property="Margin" Value="2"/>
+				</Style>
+			</StackPanel.Resources>
+			<Button x:Name="previous" VerticalAlignment="Center">Previous</Button>
+			<Button x:Name="next" VerticalAlignment="Center">Next</Button>
+		</StackPanel>
+	</Grid>
+</UserControl>
