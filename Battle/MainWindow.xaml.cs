@@ -1,5 +1,6 @@
 ﻿using Battle.binary;
 using Battle.coord;
+using Battle.reflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -43,9 +44,13 @@ namespace Battle {
 			InitializeComponent();
 			//var ct = new CallTest();
 			//var g = new Generator();
-			var rt = new SubrangeTest();
+			//var rt = new SubrangeTest();
+			mainGrid.ColumnDefinitions.Clear();
+			mainGrid.Children.Clear();
+			var osq = new ObjectSquaresView();
+			mainGrid.Children.Add(osq);
 
-			return;
+			//return;
 
 
 			processors = new List<(int code, MutableStruct struc, Action action)>() {

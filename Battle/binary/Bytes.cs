@@ -76,8 +76,9 @@ namespace Battle.binary {
 			write = new BytesWriter(this);
 		}
 
+		#region Source changes
 		/// <summary>Prepends specified array to this bytes array.
-		/// New array is created with size of this <see cref="Count"/> + given heder <see cref="T:byte[]"/> length and set as a cource.
+		/// New array is created with size of this <see cref="Count"/> + given header <see cref="T:byte[]"/> length and set as a cource.
 		/// Current <see cref="position"/> is increased by <paramref name="header"/> Length. Data is copied to new array.</summary>
 		/// <param name="header">Array to be preceede current source array. null is allowed as an argument.</param>
 		/// <returns>This bytes</returns>
@@ -90,6 +91,31 @@ namespace Battle.binary {
 			if (movePositon) p += header.Length;
 			return this;
 		}
+
+		/// <summary>Appends specified array to this bytes array.
+		/// New array is created with size of this <see cref="Count"/> + given footer <see cref="T:byte[]"/> length and set as a source.</summary>
+		/// <param name="header">Array to instert after current source array. null is allowed as an argument.</param>
+		/// <returns>This bytes</returns>
+		public Bytes append(byte[] footer) {
+			if (footer == null) return this;
+			var ns = new byte[s.Length + footer.Length];
+			Buffer.BlockCopy(s, 0, ns, 0, s.Length);
+			Buffer.BlockCopy(footer, 0, ns, s.Length, footer.Length);
+			s = ns;
+			return this;
+		}
+
+		/// <summary>Creates larger <see cref="source"/> bytes array.
+		/// Contents of current <see cref="source"/> array are copied to the beginning of a new one.</summary>
+		/// <param name="additionalBytes">Number of new bytes to add. If given value is smaller than 1, new array will be twice the size of original one.</param>
+		/// <returns>This bytes.</returns>
+		public Bytes grow(int additionalBytes = 0) {
+			var ns = new byte[s.Length + (additionalBytes > 0 ? additionalBytes : s.Length)];
+			Buffer.BlockCopy(s, 0, ns, 0, s.Length);
+			s = ns;
+			return this;
+		}
+		#endregion
 
 		/// <summary>Perform given operation in the array on each subsequent element of specific type.</summary>
 		/// <typeparam name="T">Type to operate on.</typeparam>
@@ -138,6 +164,7 @@ namespace Battle.binary {
 			public double Double() { pp = b.p; b.p += sizeof(double); return BitConverter.ToDouble(b.s, pp); }
 			public char Char() { pp = b.p; b.p += sizeof(char); return BitConverter.ToChar(b.s, pp); }
 			public float Float() { pp = b.p; b.p += sizeof(float); return BitConverter.ToSingle(b.s, pp); }
+			public byte Byte() { pp = b.p; b.p += sizeof(byte); return b.s[pp]; }
 
 			public T data<T>() {
 				var t = typeof(T);
@@ -148,6 +175,7 @@ namespace Battle.binary {
 				if (t == typeof(double)) return (T)(object)Double();
 				if (t == typeof(char)) return (T)(object)Char();
 				if (t == typeof(float)) return (T)(object)Float();
+				if (t == typeof(byte)) return (T)(object)Byte();
 				throw new Exception(t.Name + " read is not supported");
 			}
 
@@ -159,6 +187,7 @@ namespace Battle.binary {
 				if (t == typeof(double)) return Double();
 				if (t == typeof(char)) return Char();
 				if (t == typeof(float)) return Float();
+				if (t == typeof(byte)) return Byte();
 				throw new Exception(t.Name + " read is not supported");
 			}
 
@@ -282,6 +311,7 @@ namespace Battle.binary {
 		private static List<Type> checks = new List<Type>();
 
 		public static int Of(Type t) {
+			if (t == typeof(byte)) return sizeof(byte);
 			if (t == typeof(int)) return sizeof(int);
 			if (t == typeof(uint)) return sizeof(uint);
 			if (t == typeof(long)) return sizeof(long);

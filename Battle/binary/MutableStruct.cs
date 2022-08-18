@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -40,8 +41,21 @@ namespace Battle.binary {
 		}
 		/// <summary>Provides access to raw bytes of the struct.</summary>
 		public Bytes bytes { get; private set; }
-		/// <summary>Size of the struct in bytes.</summary>
-		public int size => definition.size;
+		
+		/// <summary>Size of the struct in bytes.
+		/// In case of structs of dynamic size, reading this property will actually read dynamic part of the struct to determine actual size.
+		/// To you want to know size of static size, see <see cref="StructInfo.size"/> property of struct's <see cref="definition"/>.</summary>
+		public int size {
+			get {
+				if(definition.constSize) return definition.size;
+				sizeInfo = sizeInfo ?? new SizeInfo(this);
+				return sizeInfo.size;
+			}
+		}
+		/// <summary>Object providing information about sturcture size (used only if structure has dynamic size).</summary>
+		public SizeInfo sizeInfo { get; private set; }
+
+		#region Stream
 		/// <summary>Parent stream.</summary>
 		private Stream _pS;
 		/// <summary>Parent stream from where the struct was/will be loaded.
@@ -51,9 +65,25 @@ namespace Battle.binary {
 			set {
 				_pS = value;
 				if (_pS == null) { _ad = -1; return; }
-				if (_pS.CanRead && _ad > 0) Load(_pS, _ad);
+				if (_pS.CanRead && _ad >= 0) Load(_pS, _ad);
 			}
 		}
+
+		/// <summary>Loads additonal bytes of the sturct from the stream and updates <see cref="sizeInfo"/> for additional size.</summary>
+		/// <param name="bytesCount"></param>
+		internal void loadNext(int bytesCount) {
+			if (definition.constSize) throw new InvalidOperationException("Structs of const size cannot load additional bytes, once they loaded.");
+			bytes.grow(bytesCount);
+			var ns = bytes.source.Length - bytesCount; //start of new bytes
+			var pp = bytes.position;
+			bytes.read.at(ns).fromStream(stream, _ad + ns, bytesCount);
+			bytes.position = pp;
+			sizeInfo = sizeInfo ?? new SizeInfo(this);
+			sizeInfo._size += bytesCount;
+		}
+
+		#endregion
+
 		#endregion
 
 		protected MutableStruct() {
@@ -76,7 +106,12 @@ namespace Battle.binary {
 					if (t.IsArray) t = t.GetElementType();
 					if (!typeSizable(t)) continue;
 					def.Add(t, p.Name, aa.dims[0]);
-				} else if (typeSizable(t)) def.Add(t, p.Name);
+				}else {
+					var sa = p.GetCustomAttribute<StringInfoAttribute>();
+					if(sa!= null) {
+						def.Add(t, p.Name, 0, sa.size, sa.constSize, new StringConverter(sa));
+					}else if (typeSizable(t)) def.Add(t, p.Name);
+				} 
 			}
 			definition = def;
 		}
@@ -98,7 +133,7 @@ namespace Battle.binary {
 		public MutableStruct Load(Stream s, long at) {
 			_ad = at;
 			if (s != stream) { stream = s; return this; }
-			bytes.at(0).read.fromStream(s, at, size);
+			bytes.at(0).read.fromStream(s, at, definition.size);
 			return this;
 		}
 
@@ -113,9 +148,14 @@ namespace Battle.binary {
 		}
 		#endregion
 
+		#region Extras
 		public object readValue(VariableInfo v) {
-			if (!v.isArray)
-				return bytes.read.at(v.offset).data(v.type);
+			if (!v.isArray) {
+				if (v.converter) {
+					bytes.position = v.offset;
+					return v.converter.read(bytes, new VariableConversionContext(this, v));
+				} else return bytes.read.at(v.offset).data(v.type);
+			}
 			var a = Array.CreateInstance(v.type, v.dimesnions[0]);
 			for (int i = 0; i < v.dimesnions[0]; i++)
 				a.SetValue(bytes.read.at(v.offset + v.size * i)
@@ -135,14 +175,21 @@ namespace Battle.binary {
 			return h.AddrOfPinnedObject();
 		}
 		public void free() { if (h != default) h.Free(); }
+		#endregion
 
 		#region Properties accessing
+
 		/// <summary>Read variable from the struct raw bytes</summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="name">Name of variable property.</param>
 		/// <returns></returns>
-		protected T read<T>([CallerMemberName] string name = null)
-			=> bytes.read.at(definition.offsetOf(name)).data<T>();
+		protected T read<T>([CallerMemberName] string name = null) {
+			var d = definition[name];
+			if (d.converter) {
+				bytes.position = d.offset;
+				return (T)d.converter.read(bytes, new VariableConversionContext(this, d)); //TODO: The variables conversion contexts could be pooled 
+			}else return bytes.read.at(definition.offsetOf(name)).data<T>();
+		}
 
 		protected T readM<T>([CallerMemberName] string name = null)
 			where T : MutableStruct
@@ -166,6 +213,7 @@ namespace Battle.binary {
 			return a;
 		}
 
+		#region Writing 
 		/// <summary>Write variable to raw struct bytes</summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="value">New value for the variable.</param>
@@ -189,7 +237,33 @@ namespace Battle.binary {
 		}
 		#endregion
 
+		#endregion
+
 		public static implicit operator bool(MutableStruct s) => s != null;
+	}
+
+	/// <summary>Class for keeping track of particular dynmic size <see cref="MutableStruct"/>.</summary>
+	public class SizeInfo {
+		/// <summary>Index of variable info in <see cref="StructInfo"/> of the struct that is been tracked for which the current size was determined..</summary>
+		internal int lastKnownSize = -1;
+		internal int _size;
+		public int size {
+			get {
+				var d = str.definition;
+				for (int i = System.Math.Max(lastKnownSize, 0); i < d.Count; i++) {
+					var v = d[i];
+					if (!v.constSize) str.readValue(v); //TODO:this sould update the size
+					lastKnownSize = i;
+				}
+				return _size;
+			}
+		}
+		private MutableStruct str;
+
+		public SizeInfo(MutableStruct mutableStruct) {
+			this.str = mutableStruct;
+			_size = mutableStruct.definition.size;
+		}
 	}
 
 	public class array<T> : MutableStruct {
@@ -209,11 +283,15 @@ namespace Battle.binary {
 
 	public class StructInfo : IEnumerable<VariableInfo> {
 		private List<VariableInfo> _vars = new List<VariableInfo>();
+		/// <summary>Number of variables this structure contains.</summary>
 		public int Count => _vars.Count;
 
 		public string name { get; set; }
-		/// <summary>Total size of the struct</summary>
+		/// <summary>Total, know size of the struct.
+		/// If sturct is not <see cref="constSize"/>, this will be size of all const-size varaibles, plus the minimul load size of dynamic variable.</summary>
 		public int size { get; private set; } = 0;
+		/// <summary>Tell is struct has constant size that is determined before loading it from memory.</summary>
+		public bool constSize { get; private set; } = true;
 
 		//public void Add<T>(T d, string name, int length = 0) where T : struct {
 		//	Add<T>(name, length);
@@ -226,17 +304,35 @@ namespace Battle.binary {
 		//	size += v.isArray ? s * length : s;
 		//}
 
-		public void Add(Type t, string name, int length = 0) {
+		/// <summary>Adds new property in structure definition.</summary>
+		/// <param name="t">Type of the property value.</param>
+		/// <param name="name">name of the property</param>
+		/// <param name="length">Length of the property (array length - 0 if normal property).</param>
+		/// <param name="s">Size of the property value in bytes.
+		/// If no size given (-1) the size is acquired from <see cref="binary.Size.Of(Type)"/> method.
+		/// //If size is less then 0, it means the size of the varaible(and thus entire struct) cannot be determined until reading the strucuct.
+		/// If <paramref name="constSize"/> parameter is false, the size is minimal length of bytes that need to be loaded after previous variable in order to be able to determine size of this variable.
+		/// </param>
+		/// <param name="constSize">Tells if varaible has a const size or it's size could be only determined at read time.</param>
+		///<param name="c">Custom converter that is used to write and read bytes of the variable.</param>
+		public void Add(Type t, string name, int length = 0, int s = -1, bool constSize = true, CustomVariableConverter c = null) {
 			var a = length > 0;
-			var s = binary.Size.Of(t);
-			VariableInfo v = new VariableInfo(t, name, s, size,
+			if(s == -1) s = binary.Size.Of(t);
+			VariableInfo v = new VariableInfo(t, name,
+				size: constSize ? s : -s,
+				constSize:constSize,
+				offset:this.constSize ? size : -1,
 				a, a ? new int[] { length } : null);
+			v.index = _vars.Count;
 			_vars.Add(v);
+			v.converter = c;
+			if (!constSize) this.constSize = false;
+			if (s < 0) { Debugger.Break(); s = 0; }
 			s = a ? s * length : s;
 			size += s;
 		}
 
-
+		#region Utils
 		/// <summary>Returns size of struct variable with given name.</summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
@@ -263,35 +359,44 @@ namespace Battle.binary {
 		public override string ToString() => $"{name} struct definition";
 
 		public static implicit operator bool(StructInfo s) => s != null;
+		#endregion
 	}
 
 	/// <summary>Provides information about single variable of a some struct.</summary>
 	public class VariableInfo {
+		/// <summary>Index of the variable in parent struct.</summary>
+		public int index;
 		/// <summary>Type of the variable.</summary>
 		public Type type { get; private set; }
 		/// <summary>Name of the variable.</summary>
 		public string name { get; private set; }
 		/// <summary>Size of variable in bytes.</summary>
 		public int size { get; private set; }
+		/// <summary>Tells if this variable is has constat size of bytes.</summary>
+		public bool constSize { get; private set; }
 		/// <summary>Total size of variable in bytes.</summary>
 		public int totalSize { get; private set; }
 		/// <summary>Total lengt of variable (number of items in all dimensions if variable is an array).</summary>
 		public int totalLength { get; private set; }
-		/// <summary>Offset of the variable relative to parent struct position.</summary>
+		//TODO: Get offset for post-dynamic variables
+		/// <summary>Offset of the variable relative to parent struct position.
+		/// If the offset value is negative, this means the stuct has dynamic size, and position of the varaible cannot be determinined unitl reading previous ones.</summary>
 		public int offset { get; private set; }
 		/// <summary>Tells that this variable stores mulitple values in a row, of the type.</summary>
 		public bool isArray { get; private set; }
 		/// <summary>Stores lengths of all dimensions (if this variable <see cref="isArray"/>)</summary>
 		public int[] dimesnions { get; private set; }
+		public CustomVariableConverter converter { get; set; }
 
 		public VariableInfo() { }
-		public VariableInfo(Type type, string name, int size, int offset, bool isArray, int[] dims = null) {
+		public VariableInfo(Type type, string name, int size, bool constSize, int offset, bool isArray, int[] dims = null) {
 			this.type = type;
 			this.name = name;
 			this.offset = offset;
 			this.size = size;
 			this.isArray = isArray;
 			this.dimesnions = dims;
+			this.constSize = constSize;
 
 			if (!isArray) return;
 			totalLength = dimesnions[0];
@@ -319,12 +424,92 @@ namespace Battle.binary {
 			=> new VariableInfo { type = v.type, name = v.name, offset = v.offset, isArray = v.array };
 	}
 
+	public abstract class CustomVariableConverter {
+
+		/// <summary>Read object from given bytes at thier current position.</summary>
+		public abstract object read(Bytes b, VariableConversionContext cc);
+		/// <summary>Write object to given bytes at thier current position.</summary>
+		public abstract void write(Bytes b, object value, VariableConversionContext cc);
+
+		/// <summary>False if null.</summary>
+		public static implicit operator bool(CustomVariableConverter c) => c!=null;
+	}
+
+	public class VariableConversionContext {
+		public MutableStruct struc { get; }
+		public VariableInfo variable { get; }
+
+		public VariableConversionContext(MutableStruct str, VariableInfo v) {
+			this.struc = str;
+			this.variable = v;
+		}
+
+		/// <summary>Instructs the sturct to load additional bytes from it's source stream.</summary>
+		public void loadBytes(int count) {
+			struc.loadNext(count);
+			struc.sizeInfo.lastKnownSize = variable.index;
+		}
+
+	}
+
+	/// <summary>Handles reading and writing strings in <see cref="MutableStruct"/>.</summary>
+	public class StringConverter : CustomVariableConverter {
+		public StringInfoAttribute infoAtt { get; private set; }
+
+		public StringConverter(StringInfoAttribute a) {
+			this.infoAtt = a;
+		}
+
+		//TODO: need to grow source bytes after reading the size (or even before...)
+		public override object read(Bytes b, VariableConversionContext cc) {
+			var s = infoAtt.constSize ? infoAtt.size : BitConverter
+				.ToInt32(b.read.bytes(infoAtt.size), 0);
+			if (!infoAtt.constSize) {
+				//var abc = s - System.Math.Abs(cc.variable.size); //additional bytes count (accounting initial pre-load size)
+				cc.loadBytes(s);
+			}return infoAtt.encoding.GetString(b.read.bytes(s));
+		}
+
+		public override void write(Bytes b, object value, VariableConversionContext cc) {
+			var v = value?.ToString() ?? "";
+			var bs = infoAtt.encoding.GetBytes(v);
+			if (!infoAtt.constSize) {
+				var l = BitConverter.GetBytes(bs.Length);
+				b.write.bytes(l);
+			}
+			b.write.bytes(bs);
+		}
+	}
+
+	#region Variables attributes
 	[AttributeUsage(AttributeTargets.Property)]
 	public class ArrayInfoAttribute : Attribute {
 		public int[] dims { get; private set; }
 
+		/// <summary></summary>
+		/// <param name="dimensions">Specifies lengths for each dimension of the array.</param>
 		public ArrayInfoAttribute(params int[] dimensions) {
 			dims = dimensions;
 		}
 	}
+
+	[AttributeUsage(AttributeTargets.Property)]
+	public class StringInfoAttribute : Attribute {
+		public int size { get; }
+		public Encoding encoding { get; }
+		public bool constSize { get; }
+
+		/// <summary></summary>
+		/// <param name="size">Size of the string(if <paramref name="constSize"/> is true), or size of variable storing size of the string (in bytes).</param>
+		/// <param name="encoding">Encoding of the string (see <see cref="Encoding.GetEncoding(string)"/> method that is used to assign <see cref="StringInfoAttribute.encoding"/> property).</param>
+		/// <param name="constSize"></param>
+		public StringInfoAttribute(int size, string encoding, bool constSize = false) {
+			this.size = size;
+			this.encoding = Encoding.GetEncoding(encoding);
+			this.constSize = constSize;
+		}
+
+	}
+	#endregion
+
 }
