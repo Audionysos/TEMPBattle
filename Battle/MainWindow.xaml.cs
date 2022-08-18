@@ -26,10 +26,10 @@ namespace Battle {
 	public partial class MainWindow : Window {
 
 		#region Structs template variables
-		private Math math = new Math();
-		private Alphabet alpha = new Alphabet();
-		private Parameter param = new Parameter();
-		private ParameterElement elem = new ParameterElement();
+		private Math math;// = new Math();
+		private Alphabet alpha;// = new Alphabet();
+		private Parameter param;// = new Parameter();
+		private ParameterElement elem;// = new ParameterElement();
 		#endregion
 
 		private List<(int code, MutableStruct struc, Action action)> processors;
@@ -50,7 +50,7 @@ namespace Battle {
 			var osq = new ObjectSquaresView();
 			mainGrid.Children.Add(osq);
 
-			//return;
+			return;
 
 
 			processors = new List<(int code, MutableStruct struc, Action action)>() {

@@ -57,28 +57,28 @@ namespace Battle.reflection {
 		private void renderBitmap() {
 			iResolution = (buffer.size, 0);
 
-			////buffer.perPixel(fragCoord => {
-			////	//var uv = fragCoord / buffer.size;
-			////	var uv = (fragCoord-0.5*iResolution.xy) / iResolution.y;
-			////	//var uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
-			////	var col = new float3();
-			////	//uv -= .5;
-			////	uv *= 30;
+			buffer.perPixel(fragCoord => {
+				//var uv = fragCoord / buffer.size;
+				var uv = (fragCoord - 0.5 * iResolution.xy) / iResolution.y;
+				//var uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
+				var col = new float3();
+				//uv -= .5;
+				uv *= 30;
 
-			////	//if (uv.x > 1.4 && uv.y < 1.45) Debugger.Break();
-			////	var gv = uv.fract() - .5;
-			////	var id = uv.floor();
-			////	var n = hash21(id);
+				//if (uv.x > 1.4 && uv.y < 1.45) Debugger.Break();
+				var gv = uv.fract() - .5;
+				var id = uv.floor();
+				var n = hash21(id);
 
-			////	var w = 0.08;
-			////	if (n < .5) gv.x *= -1;
-			////	var mask = smoothstep(.01, -.01, Abs(gv.x + gv.y)-w);
-			////	//var mask = Abs(gv.x + gv.y);
-			////	col += mask;
+				var w = 0.08;
+				if (n < .5) gv.x *= -1;
+				var mask = smoothstep(.01, -.01, Abs(gv.x + gv.y) - w);
+				//var mask = Abs(gv.x + gv.y);
+				col += mask;
 
-			////	//if (gv.x > .48 || gv.y > .48) col = (1, 0, 0);
-			////	return (col, 1);// (uv.x, uv.y, 0, 1);
-			////});
+				//if (gv.x > .48 || gv.y > .48) col = (1, 0, 0);
+				return (col, 1);// (uv.x, uv.y, 0, 1);
+			});
 
 			//buffer.perPixel(fragCoord => {
 			//	var p = (2.0 * fragCoord - iResolution.xy) / iResolution.y;
