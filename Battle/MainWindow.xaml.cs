@@ -1,5 +1,4 @@
-﻿using adns.processing;
-using Battle.binary;
+﻿using Battle.binary;
 using Battle.coord;
 using System;
 using System.Collections;
@@ -45,13 +44,6 @@ namespace Battle {
 			//var ct = new CallTest();
 			//var g = new Generator();
 			//var rt = new SubrangeTest();
-			mainGrid.ColumnDefinitions.Clear();
-			mainGrid.Children.Clear();
-			var osq = new ObjectSquaresView();
-			mainGrid.Children.Add(osq);
-
-			return;
-
 
 			processors = new List<(int code, MutableStruct struc, Action action)>() {
 				(0, math, processMath),

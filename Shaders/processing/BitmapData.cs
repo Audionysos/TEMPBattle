@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using static System.Math;
@@ -42,19 +44,29 @@ namespace adns.processing {
 		}
 
 		public void perPixel(Func<vec2, vec4> shdr, int chunks = 16) {
-			var chs = Ceiling((double)size.x * size.y / chunks);
-			var s = (chs, chs);
+			var chs = (double)size.x * size.y / chunks;
+			var s = (int)Ceiling(Sqrt(Ceiling(chs)));
+			var ts = new List<Task>();
+			for (int ly = 0; ly < size.y;) {
+				for (int lx = 0; lx < size.x;) {
+					var sx = lx; var sy = ly;
+					var t = Task.Run(() => {
+						var mx = Min(size.x, sx + s);
+						var my = Min(size.y, sy + s);
+						for (int x = sx; x < mx; x++) {
+							for (int y = sy; y < my; y++) {
+								var v2 = floatToGeneric(shdr((x, y)));
+								this[x, size.y - y - 1] = v2;
+							}
+						}
+					});
 
-			//(int x, int y) chs = (size.y, s);
-			for (int y = 0; y < size.y; y++) {
-				for (int x = 0; x < size.x; x++) {
-					//var v = (T)(object)0xFFFF_0000_0000_FFFF;
-					//var v = (T)(object)(ulong)0x0000_FFFF_0000_FFFF;
-					var v2 = floatToGeneric(shdr((x, y)));
-					//if (!v.Equals(v2)) y = y;
-					this[x, size.y - y - 1] = v2;
+					ts.Add(t);
+					lx += s;
 				}
+				ly += s;
 			}
+			Task.WaitAll(ts.ToArray());
 		}
 
 		private T floatToGeneric(vec4 c) {

@@ -62,14 +62,6 @@
     <Compile Include="CallTest.cs" />
     <Compile Include="coord\Subrange.cs" />
     <Compile Include="coord\SubrangeTest.cs" />
-    <Compile Include="processing\BitmapData.cs" />
-    <Compile Include="processing\float2.cs" />
-    <Compile Include="processing\float3.cs" />
-    <Compile Include="processing\float4.cs" />
-    <Compile Include="processing\M.cs" />
-    <Compile Include="processing\ObjectSquaresView.cs" />
-    <Compile Include="processing\shaders\Shader.cs" />
-    <Compile Include="processing\shaders\Sphere.cs" />
     <Compile Include="ui\BytesView.xaml.cs">
       <DependentUpon>BytesView.xaml</DependentUpon>
     </Compile>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30611.23
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Battle", "Battle\Battle.csproj", "{E9BD317D-801D-45DD-AB08-DB48BADA2C72}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MStructTest", "MStructTest\MStructTest.csproj", "{96EA33D0-B55A-4E0A-AC6B-0E05D13FE634}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoE2DEScxTest", "AoE2DEScxTest\AoE2DEScxTest.csproj", "{323508B3-F4C0-46F0-A231-0B4E27E4ED0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shaders", "Shaders\Shaders.csproj", "{CB3ED9D8-73D7-4C69-B71A-4DC7168D2AE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{323508B3-F4C0-46F0-A231-0B4E27E4ED0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{323508B3-F4C0-46F0-A231-0B4E27E4ED0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{323508B3-F4C0-46F0-A231-0B4E27E4ED0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB3ED9D8-73D7-4C69-B71A-4DC7168D2AE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB3ED9D8-73D7-4C69-B71A-4DC7168D2AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB3ED9D8-73D7-4C69-B71A-4DC7168D2AE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB3ED9D8-73D7-4C69-B71A-4DC7168D2AE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
