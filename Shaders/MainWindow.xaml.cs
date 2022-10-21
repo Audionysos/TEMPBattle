@@ -8,8 +8,6 @@ namespace Shaders {
 	public partial class MainWindow : Window {
 		public MainWindow() {
 			InitializeComponent();
-			var osq = new ObjectSquaresView();
-			this.Content = osq;
 		}
 	}
 }
