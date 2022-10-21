@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -36,6 +37,20 @@ namespace Battle.reflection {
 					var v2 = floatToGeneric(shdr((x, y)));
 					//if (!v.Equals(v2)) y = y;
 					this[x, size.y - y-1] = v2;
+				}
+			}
+		}
+
+		public void perPixel(Func<vec2, vec4> shdr, int chunks = 16) {
+			var s = 0;
+			(int x, int y) chs = (size.y, s);
+			for (int y = 0; y < size.y; y++) {
+				for (int x = 0; x < size.x; x++) {
+					//var v = (T)(object)0xFFFF_0000_0000_FFFF;
+					//var v = (T)(object)(ulong)0x0000_FFFF_0000_FFFF;
+					var v2 = floatToGeneric(shdr((x, y)));
+					//if (!v.Equals(v2)) y = y;
+					this[x, size.y - y - 1] = v2;
 				}
 			}
 		}

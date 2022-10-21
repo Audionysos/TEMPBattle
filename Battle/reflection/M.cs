@@ -27,6 +27,9 @@ namespace Battle.reflection {
 		public static double clamp(double x, double l, double h)
 			=> x < l ? l : (x > h ? h : x);
 
+		public static float min(double a, double b)
+			=> (float)System.Math.Min(a, b);
+
 		public static vec3 cos(vec3 f)
 			=> new vec3(
 				(float)System.Math.Cos(f.x)

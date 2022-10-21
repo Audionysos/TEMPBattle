@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using static System.Math;
-using static Battle.reflection.M;
+﻿using static Battle.reflection.M;
 
 namespace Battle.reflection.shaders {
 	//https://www.shadertoy.com/view/4d2XWV
@@ -18,6 +11,23 @@ namespace Battle.reflection.shaders {
 			float h = b * b - c;
 			if (h < 0.0) return -1.0f;
 			return -b - sqrt(h);
+		}
+
+		//https://www.youtube.com/watch?v=HFPlKQGChpE
+		float sphIntersect2(in vec3 ro, in vec3 rd, in vec4 sph) {
+			var s = sph.xyz; var r = sph.w;
+			var t = dot(s-ro, rd);
+			var p = ro + rd * t;
+			var y = length(s - p);
+			if(y < r) {
+				var x = sqrt(r * r - y * y); 
+				var t1 = t - x;
+				var t2 = t + x;
+				var p1 = length(rd * t1);
+				var p2 = length(rd * t2);
+				return min(p1, p2);
+			}
+			return -1;
 		}
 
 		vec3 sphNormal(in vec3 pos, in vec4 sph) {
@@ -35,16 +45,7 @@ namespace Battle.reflection.shaders {
 			float b = dot(oc, rd);
 			float c = dot(oc, oc) - sph.w * sph.w;
 			float h = b * b - c;
-
-#if false
-		    // physically plausible shadow
-		    float d = sqrt( max(0.0,sph.w*sph.w-h)) - sph.w;
-		    float t = -b - sqrt( max(h,0.0) );
-		    return (t<0.0) ? 1.0 : smoothstep(0.0, 1.0, 2.5*k*d/t );
-#else
-			// cheap but not plausible alternative
 			return (b > 0.0f) ? (float)step(-0.0001, c) : (float)smoothstep(0.0, 1.0, h * k / b);
-#endif
 		}
 
 		float iPlane(in vec3 ro, in vec3 rd) {
@@ -53,18 +54,10 @@ namespace Battle.reflection.shaders {
 
 		override protected void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 			vec2 p = (2.0 * fragCoord.xy - iResolution.xy) / iResolution.y;
-
 			vec3 ro = vec3(0.0, 0.0, 4.0);
 			vec3 rd = normalize(vec3(p, -2.0));
-
 			// sphere animation
-			vec4 sph = vec4(cos(iTime + vec3(2.0, 1.0, 1.0) + 0.0) * vec3(1.5, 0.0, 1.0), 1.0);
-
-			if (iMouse.z > 0.0) {
-				sph.x = -1.0f + 2.0f * iMouse.x / iResolution.x;
-				sph.y = 4.0f * iMouse.y / iResolution.y;
-			}
-
+			vec4 sph = vec4(vec3(0, 0.0, 0.0), 1.0);
 			vec3 lig = normalize(vec3(0.6, 0.3, 0.4));
 			vec3 col = vec3(0.0);
 
@@ -79,7 +72,7 @@ namespace Battle.reflection.shaders {
 				nor = vec3(0.0, 1.0, 0.0);
 				occ = 1.0f - sphOcclusion(pos, nor, sph);
 			}
-			float t2 = sphIntersect(ro, rd, sph);
+			float t2 = sphIntersect2(ro, rd, sph);
 			if (t2 > 0.0 && t2 < tmin) {
 				tmin = t2;
 				vec3 pos = ro + t2 * rd;

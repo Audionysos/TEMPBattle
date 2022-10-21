@@ -15,6 +15,8 @@ namespace Battle.reflection {
 
 	public class ObjectSquaresView : FrameworkElement {
 		private WriteableBitmap bm;
+		private BitmapData<uint> buffer;
+		private Shader shd = new Sphere();
 
 		public ObjectSquaresView() {
 			Loaded += onLoaded;
@@ -51,10 +53,6 @@ namespace Battle.reflection {
 			sw.Stop();
 			Debug.WriteLine($@"{sw.ElapsedMilliseconds.ToString("##.###")}ms");
 		}
-
-		private BitmapData<uint> buffer;
-
-		private Shader shd = new Sphere();
 
 		private void renderBitmap() {
 			shd.iResolution = (buffer.size, 0);
