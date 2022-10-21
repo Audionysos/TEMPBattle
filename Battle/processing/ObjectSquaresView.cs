@@ -7,11 +7,12 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Battle.reflection.shaders;
+using adns.processing;
+using adns.processing.shaders;
 using static System.Math;
-using static Battle.reflection.M;
+using static adns.processing.M;
 
-namespace Battle.reflection {
+namespace adns.processing {
 
 	public class ObjectSquaresView : FrameworkElement {
 		private WriteableBitmap bm;

@@ -1,6 +1,6 @@
-﻿using static Battle.reflection.M;
+﻿using static adns.processing.M;
 
-namespace Battle.reflection.shaders {
+namespace adns.processing.shaders {
 	//https://www.shadertoy.com/view/4d2XWV
 	public class Sphere : Shader {
 
@@ -16,11 +16,11 @@ namespace Battle.reflection.shaders {
 		//https://www.youtube.com/watch?v=HFPlKQGChpE
 		float sphIntersect2(in vec3 ro, in vec3 rd, in vec4 sph) {
 			var s = sph.xyz; var r = sph.w;
-			var t = dot(s-ro, rd);
+			var t = dot(s - ro, rd);
 			var p = ro + rd * t;
 			var y = length(s - p);
-			if(y < r) {
-				var x = sqrt(r * r - y * y); 
+			if (y < r) {
+				var x = sqrt(r * r - y * y);
 				var t1 = t - x;
 				var t2 = t + x;
 				var p1 = length(rd * t1);
@@ -45,7 +45,7 @@ namespace Battle.reflection.shaders {
 			float b = dot(oc, rd);
 			float c = dot(oc, oc) - sph.w * sph.w;
 			float h = b * b - c;
-			return (b > 0.0f) ? (float)step(-0.0001, c) : (float)smoothstep(0.0, 1.0, h * k / b);
+			return b > 0.0f ? (float)step(-0.0001, c) : (float)smoothstep(0.0, 1.0, h * k / b);
 		}
 
 		float iPlane(in vec3 ro, in vec3 rd) {

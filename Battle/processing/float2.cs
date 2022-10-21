@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Battle.reflection {
+namespace adns.processing {
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct vec2 {
 		[FieldOffset(0)]
@@ -48,7 +48,7 @@ namespace Battle.reflection {
 			new vec2(f1.x * (float)f2, f1.y * (float)f2);
 
 		public static vec2 operator -(vec2 f1, float f2) =>
-			new vec2(f1.x - f2, f1.y- f2);
+			new vec2(f1.x - f2, f1.y - f2);
 		public static vec2 operator -(vec2 f1, double f2) =>
 			new vec2(f1.x - (float)f2, f1.y - (float)f2);
 		public static vec2 operator -(vec2 f1, vec2 f2) =>

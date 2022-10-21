@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Battle.Properties {
+namespace adns.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

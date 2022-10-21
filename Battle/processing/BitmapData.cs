@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using static System.Math;
 
-namespace Battle.reflection {
+namespace adns.processing {
 	public class BitmapData<T> where T : struct {
 		public (int x, int y) size { get; private set; }
 		public T[] data { get; private set; }
@@ -29,21 +29,23 @@ namespace Battle.reflection {
 			bm.Unlock();
 		}
 
-		public void perPixel(Func<vec2, vec4> shdr){
+		public void perPixel(Func<vec2, vec4> shdr) {
 			for (int y = 0; y < size.y; y++) {
-				for (int x = 0; x <  size.x; x++) {
+				for (int x = 0; x < size.x; x++) {
 					//var v = (T)(object)0xFFFF_0000_0000_FFFF;
 					//var v = (T)(object)(ulong)0x0000_FFFF_0000_FFFF;
 					var v2 = floatToGeneric(shdr((x, y)));
 					//if (!v.Equals(v2)) y = y;
-					this[x, size.y - y-1] = v2;
+					this[x, size.y - y - 1] = v2;
 				}
 			}
 		}
 
 		public void perPixel(Func<vec2, vec4> shdr, int chunks = 16) {
-			var s = 0;
-			(int x, int y) chs = (size.y, s);
+			var chs = Ceiling((double)size.x * size.y / chunks);
+			var s = (chs, chs);
+
+			//(int x, int y) chs = (size.y, s);
 			for (int y = 0; y < size.y; y++) {
 				for (int x = 0; x < size.x; x++) {
 					//var v = (T)(object)0xFFFF_0000_0000_FFFF;
@@ -66,10 +68,10 @@ namespace Battle.reflection {
 			//		(((uint)(c.r * 255) & 0xFF) << 16) |
 			//		(((uint)(c.a * 255) & 0xFF) << 24);
 			//return (T)(object)f;
-			var f = ((uint)(Max(c.b, 0) * 255) & 0xFF) |
-					(((uint)(Max(c.g, 0) * 255) & 0xFF) << 8) |
-					(((uint)(Max(c.r, 0) * 255) & 0xFF) << 16) |
-					(((uint)(Max(c.a, 0) * 255) & 0xFF) << 24);
+			var f = (uint)(Max(c.b, 0) * 255) & 0xFF |
+					((uint)(Max(c.g, 0) * 255) & 0xFF) << 8 |
+					((uint)(Max(c.r, 0) * 255) & 0xFF) << 16 |
+					((uint)(Max(c.a, 0) * 255) & 0xFF) << 24;
 			return (T)(object)f;
 		}
 

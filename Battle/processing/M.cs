@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 
-namespace Battle.reflection {
+namespace adns.processing {
 	public static class M {
 		//float sdBox(float2 p, in float2 b) {
 		//	var q = abs(p) - b;
@@ -19,13 +19,13 @@ namespace Battle.reflection {
 			=> x < edge ? 0 : 1;
 
 		public static double smoothstep(double e1, double e2, double x) {
-			x = clamp((x-e1)/(e2-e1), 0.0, 1.0);
+			x = clamp((x - e1) / (e2 - e1), 0.0, 1.0);
 			//x = (x-e1)/(e2-e1);
 			return x * x * (3 - 2 * x);
 		}
 
 		public static double clamp(double x, double l, double h)
-			=> x < l ? l : (x > h ? h : x);
+			=> x < l ? l : x > h ? h : x;
 
 		public static float min(double a, double b)
 			=> (float)System.Math.Min(a, b);
@@ -38,7 +38,7 @@ namespace Battle.reflection {
 		);
 
 		public static float dot(vec3 f, vec3 f2) {
-			return f.x*f2.x + f.y*f2.y + f.z*f2.z;
+			return f.x * f2.x + f.y * f2.y + f.z * f2.z;
 		}
 
 		public static float length(vec3 f) {
@@ -57,7 +57,7 @@ namespace Battle.reflection {
 			=> (float)System.Math.Abs(f);
 
 		public static vec3 normalize(vec3 f) {
-			var l = System.Math.Sqrt(f.x*f.x + f.y*f.y + f.z*f.z);
+			var l = System.Math.Sqrt(f.x * f.x + f.y * f.y + f.z * f.z);
 			return vec3(f.x / l, f.y / l, f.z / l);
 		}
 

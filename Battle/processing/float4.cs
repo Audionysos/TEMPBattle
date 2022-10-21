@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Battle.reflection {
+namespace adns.processing {
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct vec4 {
 		#region Fields
@@ -31,9 +31,9 @@ namespace Battle.reflection {
 		}
 
 		public vec4(vec3 f3, float w) {
-			this.x = r = f3.x;
-			this.y = g = f3.y;
-			this.z = b = f3.z;
+			x = r = f3.x;
+			y = g = f3.y;
+			z = b = f3.z;
 			this.w = a = w;
 		}
 		#endregion

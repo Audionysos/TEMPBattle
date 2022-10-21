@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Battle.reflection.shaders {
+namespace adns.processing.shaders {
 	public abstract class Shader {
 		public vec3 iResolution;
 		public float iTime = 1;
