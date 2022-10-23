@@ -1,4 +1,5 @@
-﻿using static adns.processing.M;
+﻿using System;
+using static adns.processing.M;
 
 namespace adns.processing.shaders {
 	//https://www.shadertoy.com/view/4d2XWV
@@ -66,7 +67,8 @@ namespace adns.processing.shaders {
 			float occ = 1.0f;
 
 			float t1 = iPlane(ro, rd);
-			if (t1 > 0.0) {
+			float cd = 1f;
+			if (t1 > 0.0) { //plane
 				tmin = t1;
 				vec3 pos = ro + t1 * rd;
 				nor = vec3(0.0, 1.0, 0.0);
@@ -78,6 +80,25 @@ namespace adns.processing.shaders {
 				vec3 pos = ro + t2 * rd;
 				nor = sphNormal(pos, sph);
 				occ = 0.5f + 0.5f * nor.y;
+
+				var c = normalize(nor);
+				cd = atan2(c.zx)*180/MathF.PI;
+				float w = 12f;
+				var n = (int)(cd / w);
+				var o = n % 2;
+				var r = (cd -(n*w))/w;
+				cd = (1-r)*abs(o-1) + r*o;
+				
+				var cd2 = atan2(c.zy) * 180 / MathF.PI;
+				n = (int)(cd2 / w);
+				o = n % 2;
+				r = (cd2 - (n * w)) / w;
+				cd2 = (1 - r) * abs(o - 1) + r * o;
+
+				var th = 0.05f;
+				cd = (float)smoothstep(1-th, 1f, cd);
+				cd2 = (float)smoothstep(1-th, 1f, cd2);
+				cd = (1 - cd) * (1 - cd2);
 			}
 			if (tmin < 1000.0) {
 				vec3 pos = ro + tmin * rd;
@@ -87,9 +108,12 @@ namespace adns.processing.shaders {
 				col *= sphSoftShadow(pos, lig, sph, 2.0f);
 				col += 0.05 * occ;
 				col *= exp(-0.05 * tmin);
+				if(tmin == t2)
+					//col = col * (1,1,0) + (0, 0, cd);
+					col = col * cd;
 			}
 
-			col = sqrt(col);
+			//col = sqrt(col) * cd;
 			fragColor = vec4(col, 1.0);
 		}
 	}

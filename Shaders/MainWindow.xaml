@@ -6,13 +6,13 @@
         xmlns:local="clr-namespace:Shaders"
 		xmlns:p="clr-namespace:adns.processing"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="340" Width="503">
 	<Grid>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition/>
-			<ColumnDefinition/>
+			<ColumnDefinition />
+			<ColumnDefinition Width="auto"/>
 		</Grid.ColumnDefinitions>
 		<p:ObjectSquaresView />
-		<p:ObjectSquaresView Grid.Column="1" />
+		<!--<p:ObjectSquaresView Grid.Column="1" />-->
 	</Grid>
 </Window>

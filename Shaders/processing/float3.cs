@@ -25,6 +25,10 @@ namespace adns.processing {
 			set { r = value.r; g = value.g; }
 		}
 
+		public vec2 xz => (x, z);
+		public vec2 zx => (z, x);
+		public vec2 zy => (z, y);
+
 		public vec3(float x = 0, float y = 0, float z = 0) {
 			this.x = r = x;
 			this.y = g = y;

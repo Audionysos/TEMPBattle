@@ -1,25 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using adns.processing;
 using adns.processing.shaders;
 using static System.Math;
-using static adns.processing.M;
 
 namespace adns.processing {
 
 	public class ObjectSquaresView : FrameworkElement {
-		private WriteableBitmap bm;
+		private WriteableBitmap? bm;
 		private BitmapData<uint>? buffer;
 		private Shader shd = new Sphere();
-
 
 		protected override Size MeasureOverride(Size availableSize) {
 			prepareData(((int)Ceiling(availableSize.Width), (int)Ceiling(availableSize.Height)));
@@ -42,7 +33,7 @@ namespace adns.processing {
 			renderBitmap();
 			ctx.DrawImage(bm, new Rect(0,0, bm.Width, bm.Height));
 			sw.Stop();
-			Debug.WriteLine($@"{sw.ElapsedMilliseconds.ToString("##.###")}ms");
+			//Debug.WriteLine($@"{sw.ElapsedMilliseconds.ToString("##.###")}ms");
 		}
 
 		private void renderBitmap() {

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Windows;
 
 namespace adns.processing {
@@ -41,9 +42,17 @@ namespace adns.processing {
 			return f.x * f2.x + f.y * f2.y + f.z * f2.z;
 		}
 
+		public static vec3 cross(vec3 a, vec3 b)
+			=> vec3(a.y * b.z - a.z * b.y,
+					a.z * b.x - a.x * b.z
+					,a.x * b.y - a.y * b.x);
+
 		public static float length(vec3 f) {
 			return (float)System.Math.Sqrt(f.x * f.x + f.y * f.y + f.z * f.z);
 		}
+
+		public static T ___<T>(T o) => o;
+		public static T ___<T, T2>(T o, T2 o2) => o;
 
 		public static float sqrt(float f)
 			=> (float)System.Math.Sqrt(f);
@@ -55,6 +64,10 @@ namespace adns.processing {
 
 		public static float abs(double f)
 			=> (float)System.Math.Abs(f);
+		public static float sin(double f)
+			=> (float)System.Math.Sin(f);
+		public static float atan2(vec2 v)
+			=> (float)System.Math.Atan2(v.x, v.y);
 
 		public static vec3 normalize(vec3 f) {
 			var l = System.Math.Sqrt(f.x * f.x + f.y * f.y + f.z * f.z);
